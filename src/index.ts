@@ -1,16 +1,24 @@
 import * as express from 'express';
+import * as bodyParser from "body-parser";
+import * as mongoose from "mongoose";
+const mongooseConfig = require('./config/mongoose.config');
 
 class Server {
     public app: express.Application;
+    public mongoUrl: string = 'mongodb://<tx-mcl>:<tx-mcl123>@ds153763.mlab.com:53763/tx-mcl';
 
     constructor() {
         this.app = express();
-        this.middleware();
+        this.mongoSetup().then(db => {
+            this.middleware();
+        })
     }
 
     middleware() {
         try {
             this.app.set('port', 9001);
+            this.app.use(bodyParser.json());
+            this.app.use(bodyParser.urlencoded({ extended: false }));
             this.app.use(function (req, res, next) {
 
                 // Website you wish to allow to connect
@@ -46,6 +54,18 @@ class Server {
             })
         })
         this.app.use('/', router)
+    }
+
+    private mongoSetup(): Promise<any> {
+        (<any>mongoose).Promise = global.Promise;
+        return new Promise((resolve, reject) => {
+            let db = mongoose.connect(mongooseConfig.uri, { useNewUrlParser: true }).then(() => {
+                resolve(db);
+                console.log('contected to db')
+            }).catch((err) => {      
+                reject(err);
+            });
+        });
     }
 }
 
