@@ -4,13 +4,14 @@
   "description": "A server nodejs for site tx-client",
   "main": "dist/index.js",
   "scripts": {
-    "clean": "rimraf ./dist",
+    "clean": "rimraf dist",
     "test": "npm test",
     "build": "tsc",
     "start": "node dist/index",
     "filecopy": "copy-and-watch ./src/**/*.{sql,json,pdf,html,woff,woff2,jpg,ico,map,svg} ./dist",
     "watch:build": "tsc --watch",
-    "postinstall": "npm-run-all build"
+    "postinstall": "npm-run-all build filecopy",
+    "watch:server": "nodemon --watch './'"
   },
   "repository": {
     "type": "git",
@@ -41,7 +42,11 @@
     "mongoose": "^5.3.10",
     "nodemon": "^1.18.6",
     "save": "^2.3.2",
-    "ts-node": "^7.0.1"
+    "ts-node": "^7.0.1",
+    "path": "^0.12.7",
+    "promise": "^8.0.1",
+    "request": "^2.81.0",
+    "request-promise": "^4.2.2"
   },
   "devDependencies": {
     "@types/algoliasearch": "^3.27.4",

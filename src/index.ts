@@ -1,11 +1,12 @@
 import * as express from 'express';
 import * as bodyParser from "body-parser";
 import * as mongoose from "mongoose";
-const mongooseConfig = require('./config/mongoose.config');
+import { CommonRouter } from './routes/common.route';
+import { MongooseConfig } from './config/mongoose.config';
+//const mongooseConfig = require('./config/mongoose.config');
 
 class Server {
     public app: express.Application;
-    public mongoUrl: string = 'mongodb://<tx-mcl>:<tx-mcl123>@ds153763.mlab.com:53763/tx-mcl';
 
     constructor() {
         this.app = express();
@@ -47,21 +48,16 @@ class Server {
     }
 
     private mountRoutes(): void {
-        const router = express.Router()
-        router.get('/', (req, res) => {
-            res.json({
-                message: 'Hello World from Server!'
-            })
-        })
-        this.app.use('/', router)
+        const commonRouter = new CommonRouter();
+        this.app.use('/', commonRouter.router)
     }
 
     private mongoSetup(): Promise<any> {
         (<any>mongoose).Promise = global.Promise;
         return new Promise((resolve, reject) => {
-            let db = mongoose.connect(mongooseConfig.uri, { useNewUrlParser: true }).then(() => {
+            let db = mongoose.connect(MongooseConfig.uri, { useNewUrlParser: true }).then(() => {
                 resolve(db);
-                console.log('contected to db')
+                console.log('contected to db hehe')
             }).catch((err) => {      
                 reject(err);
             });
