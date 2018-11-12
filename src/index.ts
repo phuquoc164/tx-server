@@ -19,7 +19,7 @@ class Server {
         try {
             this.app.set('port', 9001);
             this.app.use(bodyParser.json());
-            this.app.use(bodyParser.urlencoded({ extended: false }));
+            this.app.use(bodyParser.urlencoded({ extended: true }));
             this.app.use(function (req, res, next) {
 
                 // Website you wish to allow to connect
