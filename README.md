@@ -6,4 +6,4 @@ Dependencies: Nodejs
 
 Install: npm install
 
-Run in local: nodemon
+Run in local: npm run watch:server
