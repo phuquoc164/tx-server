@@ -2,6 +2,8 @@
 import * as fs from 'fs';
 import * as csv from 'fast-csv';
 import * as firstline from 'firstline';
+import { ColHeader } from '../models/colHeader';
+import { FileSetting } from '../models/fileSetting';
 // var csv = require('fast-csv');
 
 export async function uploadFile(req, res) {
@@ -14,6 +16,7 @@ export async function uploadFile(req, res) {
         console.log('file received');
         return res.send({
             success: true,
+            link: req['file'].path,
             firstRow: await readFirstLine(req['file'].path)
         })
     }
@@ -73,6 +76,23 @@ export function readFirstLine(fileURL): Promise<any> {
         // });
     });
 }
+
+export function analyseFile(req, res){
+    let body = req['body'];
+    let colsHeader:ColHeader = body['colsHeader'];
+    console.log("colsHeader",body['colsHeader'])
+    console.log("linkOriginale",body['linkOriginale'])
+    let fileSetting: FileSetting = new FileSetting(body['linkOriginale'],body['isUseFirstLink'],body['isDeleteFirstLink'],body['selectAll'],body['colsHeader'])
+    console.log("linkOriginalesau",fileSetting.linkOriginale)
+    console.log(JSON.stringify(fileSetting.colsHeader))
+
+    console.log(JSON.stringify(fileSetting));
+    return res.send({
+        success: true
+    })
+}
+
+
 // var fs = require('fs');
 // var csv = require('fast-csv');
 
