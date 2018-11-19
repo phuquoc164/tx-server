@@ -14,6 +14,7 @@
         "src/**/*"
     ],
     "exclude": [
+        "src/uploads/*",
         ".git",
         "node_modules",
     ]

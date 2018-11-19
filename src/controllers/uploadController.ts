@@ -77,19 +77,81 @@ export function readFirstLine(fileURL): Promise<any> {
     });
 }
 
-export function analyseFile(req, res){
+export function analyseFile(req, res) {
     let body = req['body'];
-    let colsHeader:ColHeader = body['colsHeader'];
-    console.log("colsHeader",body['colsHeader'])
-    console.log("linkOriginale",body['linkOriginale'])
-    let fileSetting: FileSetting = new FileSetting(body['linkOriginale'],body['isUseFirstLink'],body['isDeleteFirstLink'],body['selectAll'],body['colsHeader'])
-    console.log("linkOriginalesau",fileSetting.linkOriginale)
+    let colsHeader: ColHeader = body['colsHeader'];
+    console.log("colsHeader", body['colsHeader'])
+    console.log("linkOriginale", body['linkOriginale'])
+    let fileSetting: FileSetting = new FileSetting(body['linkOriginale'], body['isUseFirstLink'], body['isDeleteFirstLink'], body['selectAll'], body['colsHeader'])
+    console.log("linkOriginalesau", fileSetting.linkOriginale)
     console.log(JSON.stringify(fileSetting.colsHeader))
 
     console.log(JSON.stringify(fileSetting));
+    readFile(fileSetting);
     return res.send({
         success: true
     })
+}
+
+export function readFile(fileSetting) {
+    // var fs = require('fs');
+    // var csv = require('fast-csv');
+
+    let fileStream = fs.createReadStream(fileSetting.linkOriginale);
+    let csvStream = csv({ delimiter:';' }); //headers: true, 
+
+    fileStream.pipe(csvStream);
+
+    let csvStreamWrite = csv.createWriteStream({headers: true});
+    let writableStream = fs.createWriteStream("uploads/my.csv");
+    
+    writableStream.on("finish", function(){
+        console.log("DONE!");
+    });
+      
+    csvStreamWrite.pipe(writableStream);
+
+    let numRow =0;
+    let firstRow = fileSetting.colsHeader.map(colHeader => {
+        return colHeader.colName;
+    })
+    let datasSelected = fileSetting.colsHeader.filter(colHeader => {
+        return colHeader.selected == true;
+    })
+    console.log('data ', JSON.stringify(datasSelected));
+
+    let dataEmpty = {};
+    let onData = function (row) {
+        //if (fileSetting.isDeleteFirstLink) return;
+        numRow++;
+        let rowData = {}; 
+        datasSelected.forEach((data,i)=>{
+            if(row[data.id] == ""){
+                if (!dataEmpty[data.id]) dataEmpty[data.id] = 1;
+                else dataEmpty[data.id]++
+            }
+            rowData[data.colName] = row[data.id];
+        });
+
+        csvStreamWrite.write(rowData);
+        // if (numRow == 15) {
+        //     console.log("data", JSON.stringify(dataEmpty))
+        //     csvStreamWrite.end();
+        //     csvStream.emit('donereading'); //custom event for convenience
+        // }
+    };
+    csvStream.on('data', onData);
+    csvStream.on('donereading', function () {
+        fileStream.close();
+        csvStream.removeListener('data', onData);
+    });   
+    csvStream.on('end', function () {
+        console.log("data", JSON.stringify(dataEmpty))
+        csvStreamWrite.end();
+        fileStream.close();
+        csvStream.removeListener('data', onData);
+    });
+
 }
 
 

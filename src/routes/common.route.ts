@@ -4,7 +4,7 @@ import * as path from 'path';
 import { uploadFile, analyseFile } from '../controllers/uploadController';
 export class CommonRouter {
     router = express.Router();
-    DIR = 'src/uploads';
+    DIR = 'uploads';
  
     
     constructor() {
