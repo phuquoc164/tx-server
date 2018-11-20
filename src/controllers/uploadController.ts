@@ -127,6 +127,7 @@ export function readFile(fileSetting) {
     console.log('data ', JSON.stringify(datasSelected));
 
     let dataEmpty = {};
+    let dataError = {};
     let onData = function (row) {
         if (fileSetting.isDeleteFirstLink && numRow == 0) {
             numRow++;
@@ -139,6 +140,9 @@ export function readFile(fileSetting) {
                 if (!dataEmpty[data.id]) dataEmpty[data.id] = 1;
                 else dataEmpty[data.id]++
                 row[data.id] = "";
+            }else if(!isValid(data.type, row[data.id])){
+                if (!dataError[data.id]) dataError[data.id] = 1;
+                else dataError[data.id]++
             }
             rowData[data.colName] = row[data.id];
         });
@@ -156,7 +160,8 @@ export function readFile(fileSetting) {
         csvStream.removeListener('data', onData);
     });
     csvStream.on('end', function () {
-        console.log("data", JSON.stringify(dataEmpty))
+        console.log("data", JSON.stringify(dataEmpty));
+        console.log("dataError", JSON.stringify(dataError))
         csvStreamWrite.end();
         fileStream.close();
         csvStream.removeListener('data', onData);
@@ -165,11 +170,13 @@ export function readFile(fileSetting) {
 
 function isValid(type, data) {
     let isvalid;
+    if (!data) return true
     switch (type.toLowerCase()) {
         case "number":
-            isvalid = data.isNaN() ? false : true
+            isvalid = isNaN(data) ? false : true
             break;
         case "date":
+            isvalid = isNaN(Date.parse(data)) ? false : true 
             break;
         default:
             isvalid = true;
