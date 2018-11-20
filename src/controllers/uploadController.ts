@@ -26,7 +26,10 @@ export function readFirstLine(fileURL): Promise<any> {
     return new Promise<any>(resolve => {
         let firstRow = [];
         firstline(fileURL).then(data => {
-            firstRow = data.split(";");
+            console.log(";", data.split(";").length);
+            console.log(data.split(",").length);
+
+            firstRow = (data.split(";").length > 1) ? data.split(";") : ((data.split(",").length > 1) ? data.split(",") : data.split(";"));
             resolve(firstRow);
         });
 
@@ -94,41 +97,48 @@ export function analyseFile(req, res) {
 }
 
 export function readFile(fileSetting) {
-    // var fs = require('fs');
-    // var csv = require('fast-csv');
 
     let fileStream = fs.createReadStream(fileSetting.linkOriginale);
-    let csvStream = csv({ delimiter:';' }); //headers: true, 
+    let csvStream = csv({ delimiter: ';' }); //headers: true, 
 
     fileStream.pipe(csvStream);
 
-    let csvStreamWrite = csv.createWriteStream({headers: true});
-    let writableStream = fs.createWriteStream("uploads/my.csv");
-    
-    writableStream.on("finish", function(){
+    let csvStreamWrite = csv.createWriteStream({ headers: true });
+    let writableStream = fs.createWriteStream("uploads/my1.csv");
+
+    writableStream.on("finish", function () {
         console.log("DONE!");
     });
-      
+
     csvStreamWrite.pipe(writableStream);
 
-    let numRow =0;
+    let numRow = 0;
     let firstRow = fileSetting.colsHeader.map(colHeader => {
         return colHeader.colName;
     })
-    let datasSelected = fileSetting.colsHeader.filter(colHeader => {
-        return colHeader.selected == true;
-    })
+    let datasSelected;
+    if (fileSetting.selectAll) {
+        datasSelected = fileSetting.colsHeader;
+    } else {
+        datasSelected = fileSetting.colsHeader.filter(colHeader => {
+            return colHeader.selected == true;
+        })
+    }
     console.log('data ', JSON.stringify(datasSelected));
 
     let dataEmpty = {};
     let onData = function (row) {
-        //if (fileSetting.isDeleteFirstLink) return;
+        if (fileSetting.isDeleteFirstLink && numRow == 0) {
+            numRow++;
+            return;
+        }
         numRow++;
-        let rowData = {}; 
-        datasSelected.forEach((data,i)=>{
-            if(row[data.id] == ""){
+        let rowData = {};
+        datasSelected.forEach((data, i) => {
+            if (!row[data.id] || row[data.id] == "" || row[data.id] == null) {
                 if (!dataEmpty[data.id]) dataEmpty[data.id] = 1;
                 else dataEmpty[data.id]++
+                row[data.id] = "";
             }
             rowData[data.colName] = row[data.id];
         });
@@ -144,36 +154,25 @@ export function readFile(fileSetting) {
     csvStream.on('donereading', function () {
         fileStream.close();
         csvStream.removeListener('data', onData);
-    });   
+    });
     csvStream.on('end', function () {
         console.log("data", JSON.stringify(dataEmpty))
         csvStreamWrite.end();
         fileStream.close();
         csvStream.removeListener('data', onData);
     });
-
 }
 
-
-// var fs = require('fs');
-// var csv = require('fast-csv');
-
-// var fileStream = fs.createReadStream(fileURL);
-// var csvStream = csv({headers: true});
-
-// fileStream.pipe(csvStream);
-
-// var rows = [];
-// var onData = function(row){
-//   rows.push(row);
-//   if (rows.length == 20) {
-//     csvStream.emit('donereading'); //custom event for convenience
-//   }
-// };
-// csvStream.on('data', onData);
-// csvStream.on('donereading', function(){
-//   fileStream.close();
-//   csvStream.removeListener('data', onData);
-//   console.log('got 20 rows', rows);
-// });
-
+function isValid(type, data) {
+    let isvalid;
+    switch (type.toLowerCase()) {
+        case "number":
+            isvalid = data.isNaN() ? false : true
+            break;
+        case "date":
+            break;
+        default:
+            isvalid = true;
+    }
+    return isvalid
+}
