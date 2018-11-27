@@ -165,6 +165,7 @@ export function readFile(fileSetting):Promise<any> {
             csvStreamWrite.end();
             fileStream.close();
             csvStream.removeListener('data', onData);
+            numRow = (fileSetting.isDeleteFirstLink) ? numRow - 1 : numRow;
             let dataresponse = createColHeaderArrayAfterAnalyse(datasSelected, dataEmpty, dataError, numRow - 1)
             console.log("response", JSON.stringify(dataresponse));
             resolve(dataresponse);
