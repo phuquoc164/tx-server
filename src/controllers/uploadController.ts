@@ -4,6 +4,7 @@ import * as csv from 'fast-csv';
 import * as firstline from 'firstline';
 import { ColHeader } from '../models/colHeader';
 import { FileSetting } from '../models/fileSetting';
+import { saveInformationsFile } from '../services/uploadService';
 // var csv = require('fast-csv');
 
 export async function uploadFile(req, res) {
@@ -32,51 +33,6 @@ export function readFirstLine(fileURL): Promise<any> {
             firstRow = (data.split(";").length > 1) ? data.split(";") : ((data.split(",").length > 1) ? data.split(",") : data.split(";"));
             resolve(firstRow);
         });
-
-        // let parser = csv.parse({ delimiter: ';' }, (err, data) => {
-        //     data.every((row, rowNumber) => {
-        //         if (rowNumber == 0) {
-        //             row.forEach(col => {
-        //                 firstRow.push(col);
-        //             })
-        //             console.log(firstRow);
-        //             resolve(firstRow)
-        //         }
-        //     });
-        // });
-        // fs.createReadStream(fileURL).pipe(parser);(e)
-
-        // fs.createReadStream(fileURL)
-        //     .pipe(csv.parse({ delimiter: ';' }))
-        //     .on('data', function (csvrow) {
-        //         firstRow.push(csvrow[0]);
-        //         resolve(firstRow);
-        //     })
-
-        // var fileStream = fs.createReadStream(fileURL);
-        // var csvStream = csv({ headers: true });
-
-        // fileStream.pipe(csvStream);
-
-        // var rows = [];
-        // var onData = function (row) {
-        //     rows.push(row);
-        //     if (rows.length == 1) {
-        //         row.forEach(col => {
-        //             firstRow.push(col);
-        //         })
-        //         console.log(firstRow);
-        //         resolve(firstRow)
-
-        //         csvStream.emit('donereading'); //custom event for convenience
-        //     }
-        // };
-        // csvStream.on('data', onData);
-        // csvStream.on('donereading', function () {
-        //     fileStream.close();
-        //     csvStream.removeListener('data', onData);
-        //     console.log('got 20 rows', rows);
-        // });
     });
 }
 
@@ -104,7 +60,10 @@ export function readFile(fileSetting):Promise<any> {
         fileStream.pipe(csvStream);
 
         let csvStreamWrite = csv.createWriteStream({ headers: true });
-        let writableStream = fs.createWriteStream("uploads/my1.csv");
+        let pos = fileSetting.linkOriginale.indexOf(".csv");
+        let name = fileSetting.linkOriginale.substring(0,pos);
+        let urlFile = name+"_edited.csv";
+        let writableStream = fs.createWriteStream(urlFile);
 
         writableStream.on("finish", function () {
             console.log("DONE!");
@@ -168,7 +127,7 @@ export function readFile(fileSetting):Promise<any> {
             numRow = (fileSetting.isDeleteFirstLink) ? numRow - 1 : numRow;
             let dataresponse = createColHeaderArrayAfterAnalyse(datasSelected, dataEmpty, dataError, numRow - 1)
             console.log("response", JSON.stringify(dataresponse));
-            resolve(dataresponse);
+            resolve({datasFile: dataresponse, urlFile:urlFile});
         });
     })
 }
@@ -196,4 +155,16 @@ function createColHeaderArrayAfterAnalyse(datasSelected: ColHeader[], dataEmpty,
         ele.id = i;
     });
     return datasSelected;
+}
+
+export async function analyseInformationsFile(req, res) {
+    let body = req['body'];
+    let linkOriginale = body['linkOriginale'];
+    let linkEdited = body['linkEdited'];
+    let informationsFile = body['informationsFile'];
+    saveInformationsFile(linkOriginale,linkEdited,informationsFile.fileName,informationsFile.autor,informationsFile.description,informationsFile.keywords);
+
+    return res.send({
+        success: true,
+    })
 }

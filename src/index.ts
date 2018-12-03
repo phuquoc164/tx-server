@@ -4,6 +4,8 @@ import * as mongoose from "mongoose";
 import { CommonRouter } from './routes/common.route';
 import { MongooseConfig } from './config/mongoose.config';
 //const mongooseConfig = require('./config/mongoose.config');
+require('./models/file');
+require('./models/keyword');
 
 class Server {
     public app: express.Application;

@@ -6,5 +6,3 @@ export const MongooseConfig = {
         pass: 'tx-mcl123'
     }
 };
-
-

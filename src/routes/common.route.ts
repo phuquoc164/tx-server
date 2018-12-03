@@ -1,7 +1,7 @@
 import * as express from 'express';
 import * as multer from 'multer';
 import * as path from 'path';
-import { uploadFile, analyseFile } from '../controllers/uploadController';
+import { uploadFile, analyseFile, analyseInformationsFile } from '../controllers/uploadController';
 export class CommonRouter {
     router = express.Router();
     DIR = 'uploads';
@@ -32,8 +32,8 @@ export class CommonRouter {
 
         this.router.post('/upload',upload.single('csv'), uploadFile);
         this.router.post('/analyseFile', analyseFile);
+        this.router.post('/informationsFile', analyseInformationsFile);        
     }
-
 }
 
 const commonRouter = new CommonRouter();
