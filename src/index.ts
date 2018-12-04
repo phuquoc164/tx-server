@@ -57,7 +57,7 @@ class Server {
     private mongoSetup(): Promise<any> {
         (<any>mongoose).Promise = global.Promise;
         return new Promise((resolve, reject) => {
-            let db = mongoose.connect(MongooseConfig.uri, { useNewUrlParser: true }).then(() => {
+            let db = mongoose.connect(MongooseConfig.uri, MongooseConfig.options).then(() => {
                 resolve(db);
                 console.log('contected to db hehe')
             }).catch((err) => {      

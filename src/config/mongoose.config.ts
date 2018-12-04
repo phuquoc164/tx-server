@@ -3,6 +3,7 @@ export const MongooseConfig = {
     //uri: "mongodb://localhost/tx-mcl",
     options: {
         user: 'tx-mcl',
-        pass: 'tx-mcl123'
+        pass: 'tx-mcl123',
+        useNewUrlParser: true
     }
 };

@@ -8,18 +8,23 @@ import { saveInformationsFile } from '../services/uploadService';
 // var csv = require('fast-csv');
 
 export async function uploadFile(req, res) {
-    if (!req['file']) {
-        console.log("No file received");
-        return res.send({
-            success: false
-        });
-    } else {
-        console.log('file received');
-        return res.send({
-            success: true,
-            link: req['file'].path,
-            firstRow: await readFirstLine(req['file'].path)
-        })
+    try {
+        if (!req['file']) {
+            console.log("No file received");
+            return res.status(500).send({
+                success: false,
+                error: "No file received"
+            });
+        } else {
+            console.log('file received');
+            return res.status(200).send({
+                success: true,
+                link: req['file'].path,
+                firstRow: await readFirstLine(req['file'].path)
+            })
+        }
+    } catch{
+        return res.status(500).send({ error: "Error upload file" });
     }
 }
 
@@ -45,13 +50,20 @@ export async function analyseFile(req, res) {
     console.log("linkOriginalesau", fileSetting.linkOriginale)
     console.log(JSON.stringify(fileSetting.colsHeader))
     console.log(JSON.stringify(fileSetting));
-    return res.send({
-        success: true,
-        data: await readFile(fileSetting)
-    })
+    try {
+        res.status(200).send({
+            success: true,
+            data: await readFile(fileSetting)
+        })
+    } catch{
+        res.status(500).send({
+            success: false,
+            error: "error analyseFile"
+        })
+    }
 }
 
-export function readFile(fileSetting):Promise<any> {
+export function readFile(fileSetting): Promise<any> {
     return new Promise<any>(resolve => {
 
         let fileStream = fs.createReadStream(fileSetting.linkOriginale);
@@ -61,8 +73,8 @@ export function readFile(fileSetting):Promise<any> {
 
         let csvStreamWrite = csv.createWriteStream({ headers: true });
         let pos = fileSetting.linkOriginale.indexOf(".csv");
-        let name = fileSetting.linkOriginale.substring(0,pos);
-        let urlFile = name+"_edited.csv";
+        let name = fileSetting.linkOriginale.substring(0, pos);
+        let urlFile = name + "_edited.csv";
         let writableStream = fs.createWriteStream(urlFile);
 
         writableStream.on("finish", function () {
@@ -127,7 +139,7 @@ export function readFile(fileSetting):Promise<any> {
             numRow = (fileSetting.isDeleteFirstLink) ? numRow - 1 : numRow;
             let dataresponse = createColHeaderArrayAfterAnalyse(datasSelected, dataEmpty, dataError, numRow - 1)
             console.log("response", JSON.stringify(dataresponse));
-            resolve({datasFile: dataresponse, urlFile:urlFile});
+            resolve({ datasFile: dataresponse, urlFile: urlFile });
         });
     })
 }
@@ -162,9 +174,22 @@ export async function analyseInformationsFile(req, res) {
     let linkOriginale = body['linkOriginale'];
     let linkEdited = body['linkEdited'];
     let informationsFile = body['informationsFile'];
-    saveInformationsFile(linkOriginale,linkEdited,informationsFile.fileName,informationsFile.autor,informationsFile.description,informationsFile.keywords);
+    try {
+        let dataResponse = await saveInformationsFile(linkOriginale, linkEdited, informationsFile.fileName, informationsFile.autor, informationsFile.description, informationsFile.keywords);
 
-    return res.send({
-        success: true,
-    })
+        res.status(200).send({
+            success: true,
+            dataResponse: dataResponse,
+            data: {
+                linkOriginale: linkOriginale,
+                linkEdited: linkEdited,
+                fileName: informationsFile.fileName,
+                autor: informationsFile.autor,
+                description: informationsFile.description,
+                keywords: informationsFile.keywords
+            }
+        })
+    } catch{
+        res.status(500).send({ error: "error when adding informations file" })
+    }
 }
