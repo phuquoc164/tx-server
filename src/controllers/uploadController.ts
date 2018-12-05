@@ -137,7 +137,7 @@ export function readFile(fileSetting): Promise<any> {
             fileStream.close();
             csvStream.removeListener('data', onData);
             numRow = (fileSetting.isDeleteFirstLink) ? numRow - 1 : numRow;
-            let dataresponse = createColHeaderArrayAfterAnalyse(datasSelected, dataEmpty, dataError, numRow - 1)
+            let dataresponse = createColHeaderArrayAfterAnalyse(datasSelected, dataEmpty, dataError, numRow)
             console.log("response", JSON.stringify(dataresponse));
             resolve({ datasFile: dataresponse, urlFile: urlFile });
         });
