@@ -99,6 +99,7 @@ export function readFile(fileSetting): Promise<any> {
 
         let dataEmpty = {};
         let dataError = {};
+        let dataErrorOrEmpty = [];
         let onData = function (row) {
             if (fileSetting.isDeleteFirstLink && numRow == 0) {
                 numRow++;
@@ -106,18 +107,21 @@ export function readFile(fileSetting): Promise<any> {
             }
             numRow++;
             let rowData = {};
+            let isEmptyOrError = false;
             datasSelected.forEach((data, i) => {
                 if (!row[data.id] || row[data.id] == "" || row[data.id] == null) {
                     if (!dataEmpty[data.id]) dataEmpty[data.id] = 1;
                     else dataEmpty[data.id]++
                     row[data.id] = "";
+                    isEmptyOrError = true;
                 } else if (!isValid(data.type, row[data.id])) {
                     if (!dataError[data.id]) dataError[data.id] = 1;
                     else dataError[data.id]++
+                    isEmptyOrError = true;
                 }
                 rowData[data.colName] = row[data.id];
             });
-
+            if (isEmptyOrError && dataErrorOrEmpty.length <=10) dataErrorOrEmpty.push(rowData);
             csvStreamWrite.write(rowData);
             // if (numRow == 15) {
             //     console.log("data", JSON.stringify(dataEmpty))
@@ -139,7 +143,7 @@ export function readFile(fileSetting): Promise<any> {
             numRow = (fileSetting.isDeleteFirstLink) ? numRow - 1 : numRow;
             let dataresponse = createColHeaderArrayAfterAnalyse(datasSelected, dataEmpty, dataError, numRow)
             console.log("response", JSON.stringify(dataresponse));
-            resolve({ datasFile: dataresponse, urlFile: urlFile });
+            resolve({ datasFile: dataresponse, urlFile: urlFile, dataErrorOrEmpty: dataErrorOrEmpty });
         });
     })
 }
