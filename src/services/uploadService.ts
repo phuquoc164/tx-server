@@ -62,3 +62,13 @@ export function addKeywords(keywords) {
     });
 }
 
+export function updateLinkFileById(_id, linkEdited){
+    return new Promise((resolve, reject) => {
+        File.findById(_id)
+        .then(file => {
+            file['linkToFileEdited'] = linkEdited
+            file.save().then(data => resolve(data)).catch(err => reject(err));
+        });
+    });
+}
+
