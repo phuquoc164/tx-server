@@ -10,13 +10,11 @@ import { saveInformationsFile, updateLinkFileById } from '../services/uploadServ
 export async function uploadFile(req, res) {
     try {
         if (!req['file']) {
-            console.log("No file received");
             return res.status(500).send({
                 success: false,
                 error: "No file received"
             });
         } else {
-            console.log('file received');
             return res.status(200).send({
                 success: true,
                 link: req['file'].path,
@@ -32,9 +30,6 @@ export function readFirstLine(fileURL): Promise<any> {
     return new Promise<any>(resolve => {
         let firstRow = [];
         firstline(fileURL).then(data => {
-            console.log(";", data.split(";").length);
-            console.log(data.split(",").length);
-
             firstRow = (data.split(";").length > 1) ? data.split(";") : ((data.split(",").length > 1) ? data.split(",") : data.split(";"));
             resolve(firstRow);
         });
@@ -44,12 +39,7 @@ export function readFirstLine(fileURL): Promise<any> {
 export async function analyseFile(req, res) {
     let body = req['body'];
     let colsHeader: ColHeader = body['colsHeader'];
-    console.log("colsHeader", body['colsHeader'])
-    console.log("linkOriginale", body['linkOriginale'])
     let fileSetting: FileSetting = new FileSetting(body['linkOriginale'], body['isUseFirstLink'], body['isDeleteFirstLink'], body['selectAll'], body['colsHeader'])
-    console.log("linkOriginalesau", fileSetting.linkOriginale)
-    console.log(JSON.stringify(fileSetting.colsHeader))
-    console.log(JSON.stringify(fileSetting));
     try {
         res.status(200).send({
             success: true,
@@ -95,7 +85,6 @@ export function readFile(fileSetting): Promise<any> {
                 return colHeader.selected == true;
             })
         }
-        console.log('data ', JSON.stringify(datasSelected));
 
         let dataEmpty = {};
         let dataError = {};
@@ -135,14 +124,11 @@ export function readFile(fileSetting): Promise<any> {
             csvStream.removeListener('data', onData);
         });
         csvStream.on('end', function () {
-            console.log("data", JSON.stringify(dataEmpty));
-            console.log("dataError", JSON.stringify(dataError));
             csvStreamWrite.end();
             fileStream.close();
             csvStream.removeListener('data', onData);
             numRow = (fileSetting.isDeleteFirstLink) ? numRow - 1 : numRow;
             let dataresponse = createColHeaderArrayAfterAnalyse(datasSelected, dataEmpty, dataError, numRow)
-            console.log("response", JSON.stringify(dataresponse));
             resolve({ datasFile: dataresponse, urlFile: urlFile, dataErrorOrEmpty: dataErrorOrEmpty });
         });
     })
@@ -200,7 +186,6 @@ export async function analyseInformationsFile(req, res) {
 
 export async function improveData(req, res) {
     let body = req['body'];
-    console.log(JSON.stringify(body))
 
     res.status(200).send({
         success: true,
@@ -230,7 +215,6 @@ export function improveFile(fileSetting): Promise<any> {
             return colHeader.colName;
         })
         let datasSelected = fileSetting.colsHeader;
-        console.log('data ', JSON.stringify(datasSelected));
 
         let dataEmpty = {};
         let dataError = {};
@@ -243,7 +227,6 @@ export function improveFile(fileSetting): Promise<any> {
             }
             let rowData = {};
             datasSelected.forEach((data, i) => {
-                if (i < 2) console.log(JSON.stringify(row))
                 if (!row[data.id] || row[data.id] == "" || row[data.id] == null) {
                     if (optionsDataEmpty[data.id].isDeleteRow) {
                         return;
@@ -290,8 +273,6 @@ export function improveFile(fileSetting): Promise<any> {
             csvStream.removeListener('data', onData);
         });
         csvStream.on('end', function () {
-            console.log("data", JSON.stringify(dataEmpty));
-            console.log("dataError", JSON.stringify(dataError));
             csvStreamWrite.end();
             fileStream.close();
             csvStream.removeListener('data', onData);
