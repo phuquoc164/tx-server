@@ -1,11 +1,9 @@
-//import * as csv from 'csv';
 import * as fs from 'fs';
 import * as csv from 'fast-csv';
 import * as firstline from 'firstline';
 import { ColHeader } from '../models/colHeader';
 import { FileSetting } from '../models/fileSetting';
 import { saveInformationsFile, updateLinkFileById } from '../services/uploadService';
-// var csv = require('fast-csv');
 
 export async function uploadFile(req, res) {
     try {
@@ -32,7 +30,7 @@ export function readFirstLine(fileURL): Promise<any> {
         firstline(fileURL).then(data => {
             firstRow = (data.split(";").length > 1) ? data.split(";") : ((data.split(",").length > 1) ? data.split(",") : data.split(";"));
             resolve(firstRow);
-        });
+        }).catch(err => console.log(err));
     });
 }
 
@@ -112,11 +110,6 @@ export function readFile(fileSetting): Promise<any> {
             });
             if (isEmptyOrError && dataErrorOrEmpty.length <= 10) dataErrorOrEmpty.push(rowData);
             csvStreamWrite.write(rowData);
-            // if (numRow == 15) {
-            //     console.log("data", JSON.stringify(dataEmpty))
-            //     csvStreamWrite.end();
-            //     csvStream.emit('donereading'); //custom event for convenience
-            // }
         };
         csvStream.on('data', onData);
         csvStream.on('donereading', function () {

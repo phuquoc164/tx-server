@@ -16,7 +16,7 @@ class Server {
             this.middleware();
         })
     }
-
+    /** function to start */
     middleware() {
         try {
             this.app.set('port', 9001);
@@ -48,12 +48,12 @@ class Server {
             console.log('error ' + err);
         }
     }
-
+    /**Function for connecting route API */
     private mountRoutes(): void {
         const commonRouter = new CommonRouter();
         this.app.use('/', commonRouter.router)
     }
-
+    /**Function for connecting to mongose db */
     private mongoSetup(): Promise<any> {
         (<any>mongoose).Promise = global.Promise;
         return new Promise((resolve, reject) => {

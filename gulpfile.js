@@ -1,5 +1,4 @@
 const gulp = require("gulp");
-const htmlmin = require("gulp-htmlmin");
 const newer = require("gulp-newer");
 const rimraf = require("gulp-rimraf");
 
@@ -16,10 +15,4 @@ gulp.task("copy", () => {
         .pipe(gulp.dest(paths.dest));
 });
 
-// minify html & copy over
-gulp.task("html", () => {
-    gulp.src(paths.html, {base: paths.project})
-        .pipe(htmlmin({collapseWhitespace: true}))
-        .pipe(gulp.dest(paths.dest));
-});
 gulp.task("default", ["clean",/* "compile-ts", "copy-server-resources" ,*/"build_client_"+(config.APPLICATION).toLowerCase()]);
