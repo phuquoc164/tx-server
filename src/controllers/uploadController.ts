@@ -219,9 +219,11 @@ export function improveFile(fileSetting): Promise<any> {
                 return;
             }
             let rowData = {};
+            let isAddRow = true;
             datasSelected.forEach((data, i) => {
                 if (!row[data.id] || row[data.id] == "" || row[data.id] == null) {
                     if (optionsDataEmpty[data.id].isDeleteRow) {
+                        isAddRow = false;
                         return;
                     } else if (optionsDataEmpty[data.id].isDeleteField) {
                         row[data.id] = "";
@@ -239,6 +241,7 @@ export function improveFile(fileSetting): Promise<any> {
                     }
                 } else if (!isValid(data.type, row[data.id])) {
                     if (optionsDataFail[data.id].isDeleteRow) {
+                        isAddRow = false;
                         return;
                     } else if (optionsDataFail[data.id].isDeleteField) {
                         row[data.id] = "";
@@ -258,7 +261,7 @@ export function improveFile(fileSetting): Promise<any> {
                 rowData[data.colName] = row[data.id];
             });
             numRow++;
-            csvStreamWrite.write(rowData);
+            if (isAddRow) csvStreamWrite.write(rowData);
         };
         csvStream.on('data', onData);
         csvStream.on('donereading', function () {
